@@ -1,0 +1,15 @@
+{
+  "name": "fixture-node-app",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.js",
+    "format": "prettier --check .",
+    "lint": "eslint .",
+    "test": "node --test",
+    "test:ci": "node --test --test-reporter=spec"
+  },
+  "devDependencies": {
+    "eslint": "1.0.0",
+    "prettier": "1.0.0"
+  }
+}

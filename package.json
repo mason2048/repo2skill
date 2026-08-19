@@ -1,0 +1,35 @@
+{
+  "name": "repo2skill",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first repository to Agent Skill compiler",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/mason2048/repo2skill#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mason2048/repo2skill.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mason2048/repo2skill/issues"
+  },
+  "keywords": [
+    "agent-skills",
+    "codex",
+    "claude-code",
+    "github-copilot",
+    "repository-analysis"
+  ],
+  "bin": {
+    "repo2skill": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "ui": "node src/cli.js serve",
+    "test": "node --test test/*.test.js",
+    "check": "node --check src/*.js && node --check ui/app.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

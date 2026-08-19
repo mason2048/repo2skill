@@ -1,0 +1,7 @@
+[project]
+name = "fixture-python-app"
+version = "0.1.0"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "build"]

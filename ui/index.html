@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Repo2Skill</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Repo2Skill 首页">
+      <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+      <strong>Repo2Skill</strong>
+      <span>本地静态编译器</span>
+    </a>
+    <div class="safety-mark">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-3Z"/><path d="m8.7 12 2.1 2.1 4.7-5"/></svg>
+      <span>代码不会被执行</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="source-panel" aria-labelledby="source-title">
+      <h1 id="source-title" class="sr-only">扫描仓库</h1>
+      <div class="source-kind" role="group" aria-label="仓库来源">
+        <span class="field-label">来源</span>
+        <div class="segments">
+          <button class="segment is-active" type="button" data-source="local" aria-pressed="true">本地仓库</button>
+          <button class="segment" type="button" data-source="github" aria-pressed="false">公开 GitHub</button>
+        </div>
+      </div>
+      <label class="source-input">
+        <span id="repository-label" class="field-label">仓库路径</span>
+        <input id="repository" type="text" autocomplete="off" spellcheck="false" placeholder="/absolute/path/to/repository">
+      </label>
+      <label class="agent-select">
+        <span class="field-label">目标 Agent</span>
+        <select id="target-agent">
+          <option value="generic">通用</option>
+          <option value="codex">Codex</option>
+          <option value="claude">Claude Code</option>
+          <option value="copilot">GitHub Copilot</option>
+        </select>
+      </label>
+      <button id="scan-button" class="primary scan-button" type="button">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
+        <span>扫描仓库</span>
+      </button>
+    </section>
+
+    <div id="message" class="message" role="status" aria-live="polite">尚未扫描。输入本地 Git 仓库路径或公开 GitHub URL。</div>
+
+    <section id="workspace" class="workspace is-empty" aria-label="仓库扫描结果">
+      <div class="main-column">
+        <section class="repository-summary" aria-label="仓库概览">
+          <dl>
+            <div><dt>仓库版本</dt><dd id="revision">—</dd></div>
+            <div><dt>扫描范围</dt><dd id="scope">—</dd></div>
+            <div><dt>排除目录</dt><dd><details id="excluded-details"><summary id="excluded-summary">—</summary><div id="excluded"></div></details></dd></div>
+            <div><dt>语言 / 框架</dt><dd id="languages">—</dd></div>
+            <div><dt>包管理器</dt><dd id="managers">—</dd></div>
+          </dl>
+        </section>
+
+        <section class="candidate-section" aria-labelledby="candidate-title">
+          <header class="section-header">
+            <div><h2 id="candidate-title">候选工作流 <span id="candidate-count">(0)</span></h2><p>取消不正确的候选后再生成。</p></div>
+            <label class="select-all"><input id="select-all" type="checkbox" checked><span>全选</span></label>
+            <span id="selected-count" class="selection-count">已选 0 项</span>
+          </header>
+          <div class="candidate-head" aria-hidden="true">
+            <span></span><span>类别</span><span>命令</span><span>状态</span><span>来源</span>
+          </div>
+          <div id="candidate-list" class="candidate-list">
+            <div class="empty-state">扫描完成后显示带来源的候选命令。</div>
+          </div>
+          <div id="conflict-list" class="conflict-list"></div>
+        </section>
+
+        <section class="reports" aria-labelledby="reports-title">
+          <h2 id="reports-title" class="sr-only">报告</h2>
+          <div class="tabs" role="tablist">
+            <button class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="report-content" tabindex="0" data-tab="validation">校验报告</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="report-content" tabindex="-1" data-tab="security">安全报告</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="report-content" tabindex="-1" data-tab="staleness">过期差异</button>
+          </div>
+          <div id="report-content" class="report-content" role="tabpanel"><p>生成 Skill 包后显示校验结果；已有包可在右侧复验。</p></div>
+        </section>
+
+        <footer id="result-line" class="result-line" hidden>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg>
+          <strong>Skill 包生成成功</strong><code id="result-path"></code>
+        </footer>
+      </div>
+
+      <aside class="inspector" aria-label="校验和生成">
+        <section>
+          <h2>校验摘要</h2>
+          <div class="score"><strong id="score">—</strong><span>/ 100</span></div>
+          <p>静态校验结果不代表命令运行成功。</p>
+        </section>
+        <section class="severity-summary">
+          <h3 class="blocker-text">阻断项 <span id="blocker-count">0</span></h3>
+          <div id="blockers" class="finding-list"><p>尚未扫描</p></div>
+          <h3 class="warning-text">警告 <span id="warning-count">0</span></h3>
+          <div id="warnings" class="finding-list"><p>尚未扫描</p></div>
+        </section>
+        <section>
+          <h3>安全发现 <span id="security-count">0</span></h3>
+          <div id="security-findings" class="finding-list"><p>尚未扫描</p></div>
+        </section>
+        <section class="output-section">
+          <label><span class="field-label">输出目录</span><input id="output" type="text" autocomplete="off" spellcheck="false" placeholder="/absolute/path/to/new-generated-skill"></label>
+          <button id="generate-button" class="primary" type="button" disabled>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.8 7.5 4.3 7.5-4.3M12 12v9"/></svg>
+            <span>生成 Skill 包</span>
+          </button>
+          <p>只写入新的仓库外目录，不自动安装。</p>
+        </section>
+        <section class="existing-section">
+          <label><span class="field-label">已有 Skill 包</span><input id="existing-skill" type="text" autocomplete="off" spellcheck="false" placeholder="/absolute/path/to/generated-skill"></label>
+          <div class="button-row">
+            <button id="validate-button" class="secondary" type="button" disabled>重新校验</button>
+            <button id="diff-button" class="secondary" type="button" disabled>比较 revision</button>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>
